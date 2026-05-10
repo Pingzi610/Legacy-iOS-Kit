@@ -1466,7 +1466,7 @@ device_get_info() {
     esac
 
     case $device_type in
-        iPhone3,[13] | iPhone[45],* | iPad1,1 | iPad2,4 | iPod[35],1 ) device_canpowder=1;;
+        iPhone3,[13] | iPhone[45],* | iPad1,1 | iPad2,4 | iPod[35],1 | iPad3,*) device_canpowder=1;;
     esac
 
     device_fw_dir="../saved/firmware/$device_type"
@@ -3649,6 +3649,7 @@ ipsw_prepare_bundle() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
         esac
         case $device_base_build in
@@ -4836,6 +4837,7 @@ ipsw_prepare_multipatch() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
         esac
         case $device_base_build in
@@ -6683,6 +6685,7 @@ device_ramdisk() {
                     case $device_type in
                         iPhone5,[12] ) hwmodel="iphone5";;
                         iPhone5,[34] ) hwmodel="iphone5b";;
+                        iPad3,[123] )  hwmodel="ipad3";;
                         iPad3,[456] )  hwmodel="ipad3b";;
                     esac
                 ;;
@@ -8468,7 +8471,7 @@ menu_restore() {
             ;;
         esac
         case $device_type in
-            iPhone3,[13] | iPad1,1 | iPod3,1 )
+            iPhone3,[123] | iPad1,1 | iPod3,1 )
                 menu_items+=("powdersn0w (any iOS)");;
         esac
         if (( device_proc < 7 )) || [[ $platform == "linux" ]]; then
@@ -8482,7 +8485,7 @@ menu_restore() {
         if [[ $device_canpowder == 1 && $device_proc != 4 ]]; then
             local text2="7.1.x"
             case $device_type in
-                iPhone5,[1234] ) text2="7.x";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456]) text2="7.x";;
             esac
             menu_items+=("Other (powdersn0w $text2 blobs)")
         fi
@@ -8520,7 +8523,6 @@ menu_restore() {
         case $device_type in
             iPad2,4      ) print "* iPad2,4 does not support 6.1.3 downgrades, you need blobs for 6.1.3 or 7.1.x"; echo;;
             iPhone5,[34] ) print "* iPhone 5C does not support 8.4.1 downgrades, you need blobs for 8.4.1 or 7.x"; echo;;
-            iPhone3,2    ) print "* iPhone3,2 does not support downgrades with powdersn0w"; echo;;
             iPod4,1      ) print "* iPod touch 4 does not support any untethered downgrades without blobs"; echo;;
         esac
         if [[ $platform == "macos" ]] && (( device_proc >= 7 )); then
@@ -8676,6 +8678,7 @@ ipsw_hwmodel_set() {
     case $device_type in
         iPhone5,[12] ) hwmodel="iphone5";;
         iPhone5,[34] ) hwmodel="iphone5b";;
+        iPad3,[123] ) hwmodel="ipad3";;
         iPad3,[456] ) hwmodel="ipad3b";;
         iPhone6,*   ) hwmodel="iphone6";;
         iPhone7,*   ) hwmodel="iphone7";;
@@ -8873,8 +8876,8 @@ menu_ipsw() {
             echo
             local text2="(iOS 7.1.x)"
             case $device_type in
-                iPhone3,[13] | iPad1,1 | iPod3,1 ) text2="(iOS $device_base_vers)";;
-                iPhone5,[1234] ) text2="(iOS 7.x)";;
+                iPhone3,[123] | iPad1,1 | iPod3,1 ) text2="(iOS $device_base_vers)";;
+                iPhone5,[1234] | iPod5,1 ) text2="(iOS 7.x)";;
                 iPad3,[456] ) text2="(iOS 7.0.x)";;
             esac
             if [[ -n $ipsw_base_path ]]; then
@@ -9578,11 +9581,11 @@ menu_ipsw_browse() {
             local check_vers="7.1"
             local base_vers="7.1.x"
             case $device_type in
-                iPhone5,[1234] )
+                iPhone5,[1234] | iPod5,1 )
                     check_vers="7"
                     base_vers="7.x"
                 ;;
-                iPad3,* )
+                iPad3,[456]] )
                     check_vers="7.0"
                     base_vers="7.0.x"
                 ;;
