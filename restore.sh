@@ -816,33 +816,6 @@ version_get() {
     popd >/dev/null
 }
 
-version_check() {
-    if [[ $no_version_check == 1 ]]; then
-        warn "No version check flag detected, update check is disabled and no support will be provided."
-        return
-    fi
-    pushd .. >/dev/null
-    version_update_check
-    if [[ -z $version_latest ]]; then
-        warn "Failed to check for updates. GitHub may be down or blocked by your network."
-    elif [[ $git_hash_latest != "$git_hash" ]]; then
-        if [[ -z $version_current ]]; then
-            print "* Latest version:  $version_latest ($git_hash_latest)"
-            print "* Please download/pull the latest version before proceeding."
-            version_update
-        elif (( $(echo $version_current | cut -c 2- | sed -e 's/\.//g') >= $(echo $version_latest | cut -c 2- | sed -e 's/\.//g') )); then
-            warn "Current version is newer/different than remote: $version_latest ($git_hash_latest)"
-        else
-            print "* A newer version of Legacy iOS Kit is available."
-            print "* Current version: $version_current ($git_hash)"
-            print "* Latest version:  $version_latest ($git_hash_latest)"
-            print "* Please download/pull the latest version before proceeding."
-            version_update
-        fi
-    fi
-    popd >/dev/null
-}
-
 device_entry() {
     # enable manual entry
     log "Manual device/ECID entry is enabled."
@@ -1466,7 +1439,7 @@ device_get_info() {
     esac
 
     case $device_type in
-        iPhone3,[13] | iPhone[45],* | iPad1,1 | iPad2,4 | iPod[35],1 | iPad3,*) device_canpowder=1;;
+        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,4 | iPod[35],1 | iPad2,[567] | iPad3,*) device_canpowder=1;;
     esac
 
     device_fw_dir="../saved/firmware/$device_type"
@@ -3649,6 +3622,7 @@ ipsw_prepare_bundle() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad2,[567] )  hw="ipad2b";;
             iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
         esac
@@ -4837,6 +4811,7 @@ ipsw_prepare_multipatch() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad2,[567] )  hw="ipad2b";;
             iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
         esac
@@ -6685,6 +6660,7 @@ device_ramdisk() {
                     case $device_type in
                         iPhone5,[12] ) hwmodel="iphone5";;
                         iPhone5,[34] ) hwmodel="iphone5b";;
+                        iPad2,[567] )  hw="ipad2b";;
                         iPad3,[123] )  hwmodel="ipad3";;
                         iPad3,[456] )  hwmodel="ipad3b";;
                     esac
@@ -8487,6 +8463,9 @@ menu_restore() {
             case $device_type in
                 iPhone5,[1234] | iPod5,1 | iPad3,[456]) text2="7.x";;
             esac
+            case $device_type in
+                iPad2,[567]) text2="7.0.x";;
+            esac
             menu_items+=("Other (powdersn0w $text2 blobs)")
         fi
         if [[ $device_proc != 1 && $device_type != "iPod2,1" ]] && (( device_proc <= 10 )); then
@@ -8678,6 +8657,7 @@ ipsw_hwmodel_set() {
     case $device_type in
         iPhone5,[12] ) hwmodel="iphone5";;
         iPhone5,[34] ) hwmodel="iphone5b";;
+        iPad2,[567] ) hwmodel="ipad2b";;
         iPad3,[123] ) hwmodel="ipad3";;
         iPad3,[456] ) hwmodel="ipad3b";;
         iPhone6,*   ) hwmodel="iphone6";;
@@ -8877,8 +8857,8 @@ menu_ipsw() {
             local text2="(iOS 7.1.x)"
             case $device_type in
                 iPhone3,[123] | iPad1,1 | iPod3,1 ) text2="(iOS $device_base_vers)";;
-                iPhone5,[1234] | iPod5,1 ) text2="(iOS 7.x)";;
-                iPad3,[456] ) text2="(iOS 7.0.x)";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456]) text2="(iOS 7.x)";;
+                iPad2,[567]) text2="(iOS 7.0.x)";;
             esac
             if [[ -n $ipsw_base_path ]]; then
                 print "* Selected Base IPSW $text2: $ipsw_base_path.ipsw"
@@ -9581,11 +9561,11 @@ menu_ipsw_browse() {
             local check_vers="7.1"
             local base_vers="7.1.x"
             case $device_type in
-                iPhone5,[1234] | iPod5,1 )
+                iPhone5,[1234] | iPod5,1 | iPad3,[456])
                     check_vers="7"
                     base_vers="7.x"
                 ;;
-                iPad3,[456]] )
+                iPad2,[567] )
                     check_vers="7.0"
                     base_vers="7.0.x"
                 ;;
@@ -11561,8 +11541,6 @@ main() {
     if [[ ! -e "../resources/firstrun" || $(cat "../resources/firstrun") != "$platform_ver" || $check_fail == 1 ]]; then
         install_depends
     fi
-
-    version_check
 
     device_get_info
     mkdir -p ../saved/baseband ../saved/$device_type ../saved/shsh
