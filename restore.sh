@@ -11508,7 +11508,7 @@ main() {
 
     if [[ $no_internet_check != 1 ]]; then
         log "Checking Internet connection..."
-        local try=("google.com" "www.apple.com" "208.67.222.222")
+        local try=("www.12306.cn" "www.apple.com" "208.67.222.222")
         local check
         for i in "${try[@]}"; do
             ping -c1 $i | sed -n '1,2p'
