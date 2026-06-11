@@ -1439,7 +1439,7 @@ device_get_info() {
     esac
 
     case $device_type in
-        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,4 | iPod[35],1 | iPad2,[567] | iPad3,*) device_canpowder=1;;
+        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,[4567] | iPod[35],1 | iPad3,*) device_canpowder=1;;
     esac
 
     device_fw_dir="../saved/firmware/$device_type"
@@ -7126,10 +7126,12 @@ device_ramdisk_setnvram() {
     local nvram="nvram boot-ramdisk=/a/b/c/d/e/f/g/h/i"
     if [[ $rec == 2 ]]; then
         case $device_type in
-            iPhone3,3 ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/disk.dmg";;
-            iPad2,4   ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/disk.dmg";;
-            iPhone4,1 ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/disk.dmg";;
-            iPod5,1   ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/disk.dmg";;
+            iPhone3,2  ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/0/disk.dmg";;
+            iPhone3,3  ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/disk.dmg";;
+            iPad2,4    ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/disk.dmg";;
+            iPhone4,1  ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/disk.dmg";;
+            iPod5,1    ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/disk.dmg";;
+            iPad3,[123]) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/disk.dmg";;
             iPhone5,* )
                 local selection=("iOS 7.1.x" "iOS 7.0.x")
                 input "Select this device's base version:"
@@ -7137,6 +7139,24 @@ device_ramdisk_setnvram() {
                 case $? in
                     1 ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/disk.dmg";;
                     * ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/u/v/w/disk.dmg";;
+                esac
+            ;;
+            iPad3,[456] )
+                local selection=("iOS 7.1.x" "iOS 7.0.x")
+                input "Select this device's base version:"
+                select_option "${selection[@]}"
+                case $? in
+                    1 ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/disk.dmg";;
+                    * ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/0/1/2/3/4/5/6/7/8/9/A/B/C/disk.dmg";;
+                esac
+            ;;
+            iPad2,[567] )
+                local selection=("iOS 7.1.x" "iOS 7.0.x")
+                input "Select this device's base version:"
+                select_option "${selection[@]}"
+                case $? in
+                    1 ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/u/disk.dmg";;
+                    * ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/disk.dmg";;
                 esac
             ;;
             iPad1,1 | iPod3,1 )
@@ -8461,10 +8481,7 @@ menu_restore() {
         if [[ $device_canpowder == 1 && $device_proc != 4 ]]; then
             local text2="7.1.x"
             case $device_type in
-                iPhone5,[1234] | iPod5,1 | iPad3,[456]) text2="7.x";;
-            esac
-            case $device_type in
-                iPad2,[567]) text2="7.0.x";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567]) text2="7.x";;
             esac
             menu_items+=("Other (powdersn0w $text2 blobs)")
         fi
@@ -8845,8 +8862,8 @@ menu_ipsw() {
                     iPhone3,2 ) lo=6.0; hi=7.1.1;; # lol
                     iPhone3,3 ) lo=4.2.6; hi=7.1.1;;
                     iPhone4,1 | iPad2,[123] ) lo=5.0; hi=9.3.5;;
-                    iPad2* | iPad3,[123]    ) lo=5.1; hi=9.3.5;;
-                    iPhone5,[12] | iPad3,*  ) lo=6.0; hi=9.3.5;;
+                    iPad2,[1234] | iPad3,[123]    ) lo=5.1; hi=9.3.5;;
+                    iPhone5,[12] | iPad3,* | iPad2,[567] ) lo=6.0; hi=9.3.5;;
                     iPhone5,[34] ) lo=7.0; hi=9.3.5;;
                     iPad1,1 ) lo=3.2; hi=5.1;;
                     iPod3,1 ) lo=3.1.1; hi=5.1;;
@@ -8857,8 +8874,7 @@ menu_ipsw() {
             local text2="(iOS 7.1.x)"
             case $device_type in
                 iPhone3,[123] | iPad1,1 | iPod3,1 ) text2="(iOS $device_base_vers)";;
-                iPhone5,[1234] | iPod5,1 | iPad3,[456]) text2="(iOS 7.x)";;
-                iPad2,[567]) text2="(iOS 7.0.x)";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567]) text2="(iOS 7.x)";;
             esac
             if [[ -n $ipsw_base_path ]]; then
                 print "* Selected Base IPSW $text2: $ipsw_base_path.ipsw"
@@ -9561,13 +9577,9 @@ menu_ipsw_browse() {
             local check_vers="7.1"
             local base_vers="7.1.x"
             case $device_type in
-                iPhone5,[1234] | iPod5,1 | iPad3,[456])
+                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567])
                     check_vers="7"
                     base_vers="7.x"
-                ;;
-                iPad2,[567] )
-                    check_vers="7.0"
-                    base_vers="7.0.x"
                 ;;
                 iPhone3,* )
                     check_vers="7.1.2"
