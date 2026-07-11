@@ -5010,8 +5010,13 @@ ipsw_prepare_ios4powder() {
     ipsw_prepare_bundle base
     ipsw_prepare_logos_convert
     cp -R ../resources/firmware/src .
-    rm src/target/$device_model/$device_base_build/partition
-    mv src/target/$device_model/reboot4 src/target/$device_model/$device_base_build/partition
+    if [[ $device_type == "iPod4,1" ]]; then
+        rm src/target/$device_model/10B329/partition
+        mv src/target/$device_model/reboot4 src/target/$device_model/10B329/partition
+    else
+        rm src/target/$device_model/$device_base_build/partition
+        mv src/target/$device_model/reboot4 src/target/$device_model/$device_base_build/partition
+    fi
     rm src/bin.tar
     mv src/bin4.tar src/bin.tar
     ipsw_prepare_config false true
@@ -6152,6 +6157,7 @@ ipsw_prepare() {
         ;;
 
         4 )
+            log $device_target_vers
             if [[ $device_type == "iPod4,1" && $device_target_vers == "7."* ]]; then
                 ipsw_prepare_ios7touch4
             elif [[ -n $device_type_special ]]; then
