@@ -1439,7 +1439,7 @@ device_get_info() {
     esac
 
     case $device_type in
-        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,[4567] | iPod[35],1 | iPad3,*) device_canpowder=1;;
+        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,[4567] | iPod[345],1 | iPad3,*) device_canpowder=1;;
     esac
 
     device_fw_dir="../saved/firmware/$device_type"
@@ -2839,18 +2839,23 @@ shsh_save() {
     local shsh_check
     local buildmanifest="../resources/manifest/BuildManifest_${device_type}_${version}.plist"
     local ExtraArgs=
-
+    
     if [[ $1 == "apnonce" ]]; then
         apnonce=$2
     elif [[ $1 == "version" ]]; then
         version=$2
     fi
-
-    if [[ $version == "$device_latest_vers" || $version == "4.1" ]]; then
-        if [[ $version != "4.1" ]]; then
+    
+    if [[ $version == "$device_latest_vers" || $version == "4.1" || $version == "6.1.3" ]]; then
+        if [[ $version != "4.1" && $version != "6.1.3" ]]; then
             build_id="$device_latest_build"
+            buildmanifest="../saved/$device_type/$build_id.plist"
+        elif [[ $version == "6.1.3" ]]; then
+            build_id="10B329"
+            buildmanifest="../resources/manifest/BuildManifest_${device_type}_6.1.3.plist"
+        else
+            buildmanifest="../saved/$device_type/$build_id.plist"
         fi
-        buildmanifest="../saved/$device_type/$build_id.plist"
         if [[ ! -e $buildmanifest ]]; then
             if [[ -e "$ipsw_base_path.ipsw" ]]; then
                 log "Extracting BuildManifest from $version IPSW..."
@@ -3629,6 +3634,7 @@ ipsw_prepare_bundle() {
         case $device_base_build in
             "11A"* | "11B"* ) base_build="11B554a";;
             "9"* ) base_build="9B206";;
+            "10"* ) base_build="10B329";;
         esac
         echo "<key>RamdiskExploit</key><dict>" >> $NewPlist
         echo "<key>exploit</key><string>src/target/$hw/$base_build/exploit</string>" >> $NewPlist
@@ -5937,6 +5943,8 @@ restore_deviceprepare() {
                 shsh_save version $device_latest_vers
                 device_enter_mode pwnDFU
                 return
+            elif [[ $device_target_powder == 1 && $device_type == "iPhone4,1" && $device_base_vers == "6.1.3" ]]; then
+                shsh_save version 6.1.3
             elif [[ $device_target_other != 1 && $device_target_powder != 1 ]]; then
                 shsh_save
             fi
@@ -8467,7 +8475,7 @@ menu_restore() {
             ;;
         esac
         case $device_type in
-            iPhone3,[123] | iPad1,1 | iPod3,1 )
+            iPhone3,[123] | iPad1,1 | iPod[34],1 | iPhone4,1 )
                 menu_items+=("powdersn0w (any iOS)");;
         esac
         if (( device_proc < 7 )) || [[ $platform == "linux" ]]; then
@@ -8519,7 +8527,7 @@ menu_restore() {
         case $device_type in
             iPad2,4      ) print "* iPad2,4 does not support 6.1.3 downgrades, you need blobs for 6.1.3 or 7.1.x"; echo;;
             iPhone5,[34] ) print "* iPhone 5C does not support 8.4.1 downgrades, you need blobs for 8.4.1 or 7.x"; echo;;
-            iPod4,1      ) print "* iPod touch 4 does not support any untethered downgrades without blobs"; echo;;
+            iPod4,1      ) print "* iPod touch 4 does not support any untethered downgrades without blobs?"; echo;;
         esac
         if [[ $platform == "macos" ]] && (( device_proc >= 7 )); then
             print "* Note: Restoring to latest iOS for 64-bit devices is not supported on macOS, use iTunes/Finder instead for that"
@@ -8543,7 +8551,7 @@ menu_restore() {
             ;;
             6.* )
                 case $device_type in
-                    iPod3,1 | iPad1,1 ) menu_ipsw_special "$selected" "$1";;
+                    iPod[34],1 | iPad1,1 | iPhone4,1 ) menu_ipsw_special "$selected" "$1";;
                     * ) menu_ipsw "$selected" "$1";;
                 esac
             ;;
@@ -8827,6 +8835,10 @@ menu_ipsw() {
                 device_base_vers="$device_latest_vers"
                 device_base_build="$device_latest_build"
             fi
+            if [[ $device_type == "iPhone4,1" ]]; then
+                device_base_vers="6.1.3"
+                device_base_build="10B329"
+            fi
         elif [[ $1 == *"Tethered"* ]]; then
             device_target_tethered=1
         elif [[ -n $device_target_vers && -e "../$newpath.ipsw" ]]; then
@@ -8842,7 +8854,7 @@ menu_ipsw() {
         echo
         if [[ $1 == *"powdersn0w"* ]]; then
             menu_items+=("Select Base IPSW")
-            if [[ $device_proc == 4 ]]; then
+            if [[ $device_proc == 4 || $device_type = "iPhone4,1" ]]; then
                 menu_items+=("Download Base IPSW")
             fi
             if [[ -n $ipsw_path ]]; then
@@ -8867,13 +8879,14 @@ menu_ipsw() {
                     iPhone5,[34] ) lo=7.0; hi=9.3.5;;
                     iPad1,1 ) lo=3.2; hi=5.1;;
                     iPod3,1 ) lo=3.1.1; hi=5.1;;
+                    iPod4,1 ) lo=4.1; hi=6.1.5;;
                 esac
                 print "* Any iOS version from $lo to $hi is supported"
             fi
             echo
             local text2="(iOS 7.1.x)"
             case $device_type in
-                iPhone3,[123] | iPad1,1 | iPod3,1 ) text2="(iOS $device_base_vers)";;
+                iPhone3,[123] | iPad1,1 | iPod[34],1 | iPhone4,1 ) text2="(iOS $device_base_vers)";;
                 iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567]) text2="(iOS 7.x)";;
             esac
             if [[ -n $ipsw_base_path ]]; then
@@ -8884,7 +8897,7 @@ menu_ipsw() {
                 else
                     warn "Selected Base IPSW failed validation, proceed with caution"
                 fi
-                if [[ $device_proc != 4 ]]; then
+                if [[ $device_proc != 4 && $device_base_vers != "6.1.3" ]]; then
                     menu_items+=("Select Base SHSH")
                 fi
                 echo
@@ -8892,7 +8905,7 @@ menu_ipsw() {
                 print "* Select Base IPSW $text2 to continue"
                 echo
             fi
-            if [[ $device_proc == 4 ]]; then
+            if [[ $device_proc == 4 || $device_type == "iPhone4,1" ]]; then
                 shsh_path=1
             else
                 if [[ -n $shsh_path ]]; then
@@ -9598,6 +9611,11 @@ menu_ipsw_browse() {
                     check_vers="4.3"
                     base_vers="4.3.x"
                 ;;
+                iPhone4,1 )
+                    check_vers="6.1.3"
+                    base_vers="$check_vers"
+                ;;
+                
             esac
             if [[ $device_base_vers != "$check_vers"* ]]; then
                 log "Selected IPSW is not for iOS $base_vers."
@@ -9637,7 +9655,9 @@ menu_ipsw_browse() {
                 pause
                 return
             elif [[ $device_target_build == "11D257" && $device_type == "iPhone3,"* ]] ||
-                 [[ $device_target_build == "9B206" && $device_proc == 4 && $device_type != "iPhone3,"* ]]; then
+                 [[ $device_target_build == "10B329" && $device_type == "iPhone4,1" ]] ||
+                 [[ $device_target_build == "10B500" && $device_type == "iPod4,1" ]] ||
+                 [[ $device_target_build == "9B206" && $device_proc == 4 && $device_type != "iPhone3,"* && $device_type != "iPod4,1" ]]; then
                 log "Selected IPSW ($device_target_vers) is not supported as target version. You need to select it as the base IPSW."
                 device_target_vers=
                 device_target_build=
