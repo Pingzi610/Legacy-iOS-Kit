@@ -4823,6 +4823,7 @@ ipsw_prepare_multipatch() {
         esac
         case $device_base_build in
             "11A"* | "11B"* ) base_build="11B554a";;
+            "10B"* ) base_build="10B329";;
             "9"* ) base_build="9B206";;
         esac
         local exploit="src/target/$hw/$base_build/exploit"

@@ -10,14 +10,12 @@ reboot_
 fi
 
 mount_hfs /dev/disk0s1s1 /mnt1
-
 if [ ! -e "/dev/rdisk0s1s3" ]; then
 mount_hfs /dev/disk0s1s2 /mnt1/private/var
 else
 isIOS5=1
 mount_hfs /dev/disk0s1s3 /mnt1/private/var
 fi
-sleep 1s
 
 sleep 1s
 
@@ -81,7 +79,6 @@ dd of=/dev/rdisk0s1s4 if=/exploit bs=512k count=1
 sleep 1s
 fi
 
-nvram -c
 nvram boot-partition=2
 nvram boot-ramdisk="/a/disk.dmg"
 
