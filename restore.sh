@@ -1439,7 +1439,7 @@ device_get_info() {
     esac
 
     case $device_type in
-        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,[4567] | iPod[345],1 | iPad3,*) device_canpowder=1;;
+        iPhone3,* | iPhone[45],* | iPad1,1 | iPad2,* | iPod[345],1 | iPad3,*) device_canpowder=1;;
     esac
 
     device_fw_dir="../saved/firmware/$device_type"
@@ -3627,6 +3627,7 @@ ipsw_prepare_bundle() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad2,[123] )  hw="ipad2";;
             iPad2,[567] )  hw="ipad2b";;
             iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
@@ -4808,7 +4809,15 @@ ipsw_prepare_multipatch() {
         cp -R ../resources/firmware/src .
         "$dir/hfsplus" RestoreRamdisk.dec untar src/bin4.tar
         "$dir/hfsplus" RestoreRamdisk.dec mv sbin/reboot sbin/reboot_
-        "$dir/hfsplus" RestoreRamdisk.dec add src/target/$device_model/reboot4 sbin/reboot
+        if [[ $device_type == iPad2,[123] ]]; then
+            case $device_base_build in
+                "11A"* | "11B"* ) base_build="11B554a";;
+                "11D"* ) base_build="11D257";;
+            esac
+            "$dir/hfsplus" RestoreRamdisk.dec add src/target/ipad2/$basebuild/reboot4 sbin/reboot
+        else
+            "$dir/hfsplus" RestoreRamdisk.dec add src/target/$device_model/reboot4 sbin/reboot
+        fi
         "$dir/hfsplus" RestoreRamdisk.dec chmod 755 sbin/reboot
         "$dir/hfsplus" RestoreRamdisk.dec chown 0:0 sbin/reboot
     elif [[ $device_target_powder == 1 ]]; then
@@ -4817,6 +4826,7 @@ ipsw_prepare_multipatch() {
         case $device_type in
             iPhone5,[12] ) hw="iphone5";;
             iPhone5,[34] ) hw="iphone5b";;
+            iPad2,[123] )  hw="ipad2";;
             iPad2,[567] )  hw="ipad2b";;
             iPad3,[123] )  hw="ipad3";;
             iPad3,[456] )  hw="ipad3b";;
@@ -5014,6 +5024,13 @@ ipsw_prepare_ios4powder() {
     if [[ $device_type == "iPod4,1" ]]; then
         rm src/target/$device_model/10B329/partition
         mv src/target/$device_model/reboot4 src/target/$device_model/10B329/partition
+    elif [[ $device_type == iPad2,[123] ]]; then
+        case $device_base_build in
+            "11A"* | "11B"* ) base_build="11B554a";;
+            "11D"* ) base_build="11D257";;
+        esac
+        rm src/target/$device_model/$base_build/partition
+        mv src/target/$device_model/$base_build/reboot4 src/target/$device_model/$base_build/partition
     else
         rm src/target/$device_model/$device_base_build/partition
         mv src/target/$device_model/reboot4 src/target/$device_model/$device_base_build/partition
@@ -6194,6 +6211,12 @@ ipsw_prepare() {
             # 32-bit devices A5/A6
             if [[ $device_target_tethered == 1 ]]; then
                 ipsw_prepare_tethered
+            elif [[ $device_target_powder == 1 ]] && [[ $device_target_vers == "4"* ]]; then
+                shsh_save version $device_latest_vers
+                case $device_target_vers in
+                    4.3* ) ipsw_prepare_ios4powder;;
+                    * ) ipsw_prepare_ios4multipart;;
+                esac
             elif [[ $device_target_powder == 1 ]]; then
                 ipsw_prepare_powder
             elif [[ $device_target_vers != "$device_latest_vers" || $ipsw_gasgauge_patch == 1 ]]; then
@@ -6675,7 +6698,8 @@ device_ramdisk() {
                     case $device_type in
                         iPhone5,[12] ) hwmodel="iphone5";;
                         iPhone5,[34] ) hwmodel="iphone5b";;
-                        iPad2,[567] )  hw="ipad2b";;
+                        iPad2,[123] )  hwmodel="ipad2";;
+                        iPad2,[567] )  hwmodel="ipad2b";;
                         iPad3,[123] )  hwmodel="ipad3";;
                         iPad3,[456] )  hwmodel="ipad3b";;
                     esac
@@ -7146,7 +7170,17 @@ device_ramdisk_setnvram() {
             iPad2,4    ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/s/t/disk.dmg";;
             iPhone4,1  ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/disk.dmg";;
             iPod5,1    ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/disk.dmg";;
+            iPad2,[123]) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/disk.dmg";;
             iPad3,[123]) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/disk.dmg";;
+            iPhone4,1 )
+                local selection=("iOS 6.1.3" "iOS 7.1.x")
+                input "Select this device's base version:"
+                select_option "${selection[@]}"
+                case $? in
+                    1 ) ;;
+                    * ) $ssh -p $ssh_port root@127.0.0.1 "$nvram/j/k/l/m/n/o/p/q/r/disk.dmg";;
+                esac
+            ;;
             iPhone5,* )
                 local selection=("iOS 7.1.x" "iOS 7.0.x")
                 input "Select this device's base version:"
@@ -8496,7 +8530,7 @@ menu_restore() {
         if [[ $device_canpowder == 1 && $device_proc != 4 ]]; then
             local text2="7.1.x"
             case $device_type in
-                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567]) text2="7.x";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[123567]) text2="7.x";;
             esac
             menu_items+=("Other (powdersn0w $text2 blobs)")
         fi
@@ -8534,7 +8568,6 @@ menu_restore() {
         case $device_type in
             iPad2,4      ) print "* iPad2,4 does not support 6.1.3 downgrades, you need blobs for 6.1.3 or 7.1.x"; echo;;
             iPhone5,[34] ) print "* iPhone 5C does not support 8.4.1 downgrades, you need blobs for 8.4.1 or 7.x"; echo;;
-            iPod4,1      ) print "* iPod touch 4 does not support any untethered downgrades without blobs?"; echo;;
         esac
         if [[ $platform == "macos" ]] && (( device_proc >= 7 )); then
             print "* Note: Restoring to latest iOS for 64-bit devices is not supported on macOS, use iTunes/Finder instead for that"
@@ -8689,6 +8722,7 @@ ipsw_hwmodel_set() {
     case $device_type in
         iPhone5,[12] ) hwmodel="iphone5";;
         iPhone5,[34] ) hwmodel="iphone5b";;
+        iPad2,[123] ) hwmodel="ipad2";;
         iPad2,[567] ) hwmodel="ipad2b";;
         iPad3,[123] ) hwmodel="ipad3";;
         iPad3,[456] ) hwmodel="ipad3b";;
@@ -8842,7 +8876,7 @@ menu_ipsw() {
                 device_base_vers="$device_latest_vers"
                 device_base_build="$device_latest_build"
             fi
-            if [[ $device_type == "iPhone4,1" ]]; then
+            if [[ $device_type == "iPhone4,1" && $1 == *"powdersn0w (any iOS)" ]]; then
                 device_base_vers="6.1.3"
                 device_base_build="10B329"
             fi
@@ -8880,8 +8914,9 @@ menu_ipsw() {
                     iPhone3,1 ) lo=4.0; hi=7.1.1;;
                     iPhone3,2 ) lo=6.0; hi=7.1.1;; # lol
                     iPhone3,3 ) lo=4.2.6; hi=7.1.1;;
-                    iPhone4,1 | iPad2,[123] ) lo=5.0; hi=9.3.5;;
-                    iPad2,[1234] | iPad3,[123]    ) lo=5.1; hi=9.3.5;;
+                    iPhone4,1 ) lo=5.0; hi=9.3.5;;
+                    iPad2,[123] ) lo=4.3; hi=9.3.5;;
+                    iPad2,4 | iPad3,[123]    ) lo=5.1; hi=9.3.5;;
                     iPhone5,[12] | iPad3,* | iPad2,[567] ) lo=6.0; hi=9.3.5;;
                     iPhone5,[34] ) lo=7.0; hi=9.3.5;;
                     iPad1,1 ) lo=3.2; hi=5.1;;
@@ -8892,9 +8927,12 @@ menu_ipsw() {
             fi
             echo
             local text2="(iOS 7.1.x)"
+            if [[ $device_type=="iPhone4,1" && $1 == *"powdersn0w (any iOS)" ]]; then
+                text2="(iOS 6.1.3)"
+            fi
             case $device_type in
-                iPhone3,[123] | iPad1,1 | iPod[34],1 | iPhone4,1 ) text2="(iOS $device_base_vers)";;
-                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567]) text2="(iOS 7.x)";;
+                iPhone3,[123] | iPad1,1 | iPod[34],1 ) text2="(iOS $device_base_vers)";;
+                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[123567] ) text2="(iOS 7.x)";;
             esac
             if [[ -n $ipsw_base_path ]]; then
                 print "* Selected Base IPSW $text2: $ipsw_base_path.ipsw"
@@ -9119,7 +9157,7 @@ menu_ipsw() {
                 mode="restore-update"
             ;;
             "Select Target IPSW" ) menu_ipsw_browse "$1";;
-            "Select Base IPSW" ) menu_ipsw_browse "base";;
+            "Select Base IPSW" ) menu_ipsw_browse "base" "$1";;
             "Select Target SHSH" ) menu_shsh_browse "$1";;
             "Select Base SHSH" ) menu_shsh_browse "base";;
             "Download Target IPSW" ) ipsw_download "../$newpath";;
@@ -9594,12 +9632,12 @@ menu_ipsw_browse() {
             fi
         ;;
         "base" )
-            local check_vers="7.1"
-            local base_vers="7.1.x"
+            local check_vers="7"
+            local base_vers="7.x"
             case $device_type in
-                iPhone5,[1234] | iPod5,1 | iPad3,[456] | iPad2,[567])
-                    check_vers="7"
-                    base_vers="7.x"
+                iPad3,[123] | iPad2,4 | iPhone4,1 )
+                    check_vers="7.1"
+                    base_vers="7.1.x"
                 ;;
                 iPhone3,* )
                     check_vers="7.1.2"
@@ -9613,20 +9651,22 @@ menu_ipsw_browse() {
                     check_vers="5.1.1"
                     base_vers="$check_vers"
                 ;;
+            esac
+            if [[ $2 == *"powdersn0w (any iOS)"* && $device_type == "iPhone4,1" ]]; then
+                    check_vers="6.1.3"
+                    base_vers="$check_vers"
+            elif [[ $ipsw_fourthree == 1 ]]; then
+                case $device_type in
                 iPad2,[123] )
                     # fourthree
                     check_vers="4.3"
                     base_vers="4.3.x"
                 ;;
-                iPhone4,1 )
-                    check_vers="6.1.3"
-                    base_vers="$check_vers"
-                ;;
-                
             esac
+            fi
             if [[ $device_base_vers != "$check_vers"* ]]; then
                 log "Selected IPSW is not for iOS $base_vers."
-                if [[ $device_proc == 4 ]]; then
+                if [[ $device_proc == 4 || $check_vers == "6.1.3" ]]; then
                     print "* You need to select iOS $base_vers IPSW for the base to use powdersn0w."
                 elif [[ $ipsw_fourthree == 1 ]]; then
                     print "* You need to select iOS $base_vers IPSW for the base to use FourThree."
