@@ -5029,8 +5029,8 @@ ipsw_prepare_ios4powder() {
             "11A"* | "11B"* ) base_build="11B554a";;
             "11D"* ) base_build="11D257";;
         esac
-        rm src/target/$device_model/$base_build/partition
-        mv src/target/$device_model/$base_build/reboot4 src/target/$device_model/$base_build/partition
+        rm src/target/ipad2/$base_build/partition
+        mv src/target/ipad2/$base_build/reboot4 src/target/ipad2/$base_build/partition
     else
         rm src/target/$device_model/$device_base_build/partition
         mv src/target/$device_model/reboot4 src/target/$device_model/$device_base_build/partition
