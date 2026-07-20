@@ -4809,7 +4809,7 @@ ipsw_prepare_multipatch() {
         cp -R ../resources/firmware/src .
         "$dir/hfsplus" RestoreRamdisk.dec untar src/bin4.tar
         "$dir/hfsplus" RestoreRamdisk.dec mv sbin/reboot sbin/reboot_
-        if [[ $device_type == iPad2,[123] ]]; then
+        if [[ $device_type == "iPad2,"* ]]; then
             case $device_base_build in
                 "11A"* | "11B"* ) base_build="11B554a";;
                 "11D"* ) base_build="11D257";;
@@ -5024,7 +5024,7 @@ ipsw_prepare_ios4powder() {
     if [[ $device_type == "iPod4,1" ]]; then
         rm src/target/$device_model/10B329/partition
         mv src/target/$device_model/reboot4 src/target/$device_model/10B329/partition
-    elif [[ $device_type == iPad2,[123] ]]; then
+    elif [[ $device_type == "iPad2,"* ]]; then
         case $device_base_build in
             "11A"* | "11B"* ) base_build="11B554a";;
             "11D"* ) base_build="11D257";;
@@ -8915,7 +8915,7 @@ menu_ipsw() {
                     iPhone3,2 ) lo=6.0; hi=7.1.1;; # lol
                     iPhone3,3 ) lo=4.2.6; hi=7.1.1;;
                     iPhone4,1 ) lo=5.0; hi=9.3.5;;
-                    iPad2,[123] ) lo=4.3; hi=9.3.5;;
+                    iPad2,[123] ) lo=4.3.4; hi=9.3.5;;
                     iPad2,4 | iPad3,[123]    ) lo=5.1; hi=9.3.5;;
                     iPhone5,[12] | iPad3,* | iPad2,[567] ) lo=6.0; hi=9.3.5;;
                     iPhone5,[34] ) lo=7.0; hi=9.3.5;;
