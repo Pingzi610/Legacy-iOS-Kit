@@ -1,4 +1,4 @@
-# Legacy iOS Kit
+# Legacy iOS Kit (Slim)
 
 - (formerly iOS-OTA-Downgrader)
 - **An all-in-one tool to [restore/downgrade](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Restore-Downgrade), [save SHSH blobs](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Saving-SHSH-blobs), [jailbreak](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Jailbreaking) legacy iOS devices, and more**
@@ -6,9 +6,13 @@
 - **Read the ["How to Use" wiki page](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/How-to-Use) for instructions**
 - **Read the ["Troubleshooting" wiki page](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Troubleshooting) for tips, frequent questions, and troubleshooting**
 
+> **This is a slimmed-down fork.** IPA sideloading/dumping, App Management, and Data Management (device backup/restore, SSHFS mount, erase all content and settings) have been removed, together with all of their code and dependencies. Restoring/downgrading, SSH ramdisk, saving SHSH blobs, jailbreaking, and the remaining utilities are unchanged.
+>
+> 这是一个精简版本：已移除 IPA 安装/提取、App 管理、数据管理（备份/恢复、挂载、抹掉所有内容和设置）及其全部代码与依赖，保留刷机/降级、SSH Ramdisk、保存 SHSH blobs、越狱等功能。
+
 ## Features
 - Legacy iOS Kit supports all 32-bit iOS devices, and some 64-bit (A7/A8/A9/A10/A11) devices
-    - Devices that received iOS 16 and newer will only have limited functionality (e.g. sideloading) and some features like SSH ramdisk are not supported
+    - Devices that received iOS 16 and newer will only have limited functionality (saving SHSH blobs, restoring with blobs, and other basic features), and some features like SSH ramdisk are not supported
     - Legacy iOS Kit defines *legacy devices* as all iOS devices that are vulnerable to a bootrom exploit (checkm8 and older)
 - Restore to signed OTA versions (iOS 8.4.1 and/or 6.1.3) on A5/A6 devices
 - Restore to iOS 10.3.3 (signed OTA version) on supported A7 devices
@@ -24,7 +28,6 @@
 - Hacktivation for iPhone 2G, 3G, 3GS, 4 GSM (activate without valid SIM card)
 - Boot SSH Ramdisk for supported 32-bit and 64-bit devices
 - Save Onboard SHSH blobs for supported 32-bit and 64-bit devices
-- Sideload IPA files for supported devices on Linux (and macOS)
 - Save SHSH blobs from Cydia servers for 32-bit devices
 - Enter pwned iBSS/kDFU mode for supported 32-bit devices
 - Save onboard SHSH blobs for jailbroken 64-bit devices (deverser)
@@ -32,13 +35,29 @@
 - Install [TrollStore](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/TrollStore) using SSH Ramdisk for supported 64-bit devices on iOS 14/15
 - Clear NVRAM for 32-bit devices
 - Device activation using ideviceactivation (especially useful for iOS 4 and lower)
+- Connect to a jailbroken device over USB SSH (OpenSSH) from the Useful Utilities menu
 - The latest baseband will be flashed for certain A5/A6 devices (for iPhone 4S, 5, 5C, iPad 4, mini 1)
     - For more info on baseband, go to [Baseband Update](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Baseband-Update) wiki page
 - Dumping and stitching baseband to IPSW (requires `--disable-bbupdate`)
 - Dumping and stitching activation records to IPSW (requires `--activation-records`)
-- [App Management](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/App-Management) - Install IPA (AppSync), dump apps as IPA, list installed apps
-- [Data Management](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Data-Management) - Backup and restore, mount device, erase all content and settings
 - [Misc Utilities](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/Misc-Utilities) - Pair device, export data and battery info, shutdown/restart device, and more
+
+## Removed from this fork (本分支删除的功能)
+
+- IPA sideloading (Sideloader, AltServer, Install IPA/AppSync) and app dumping (Clutch/ipainstaller) - IPA 安装与提取
+- App Management menu (install/list/dump apps) - App 管理菜单
+- Data Management menu: device backup/restore via `idevicebackup2`, SSHFS mount, Erase All Content and Settings - 数据管理（备份/恢复、挂载、抹除）
+- SundanceInH2A restores (iOS 6 on iPad 1 / iPod touch 3) - iPad 1、iPod touch 3 刷 iOS 6
+- iOS 7 tethered restore for iPod touch 4 (`resources/patch/touch4-ios7`) - iPod touch 4 刷 iOS 7
+  - These devices still support restoring to their other supported versions (e.g. iOS 5.1.1 on iPad 1 / touch 3, iOS 6.1.6 on touch 4)
+
+
+Related notes:
+- The `ideviceinstaller` and `idevicebackup2` binaries and the `resources/appdump` folder are no longer shipped.
+- `sshfs` is no longer installed by the dependency installer.
+- A jailbroken device can still be reached with the "Connect to SSH" option in Useful Utilities.
+- For IPA resigning/installing, use [Sideloadly](https://sideloadly.io) or [TrollStore](https://github.com/opa334/TrollStore).
+
 
 ## Supported devices
 - [Identify your device here](https://ipsw.me/device-finder)
@@ -111,8 +130,6 @@
     - iPhone 2G, 3G, 3GS, iPod touch 1, touch 2 - All versions are supported
     - Lowest downgradable version is 2.0. Going to 1.x does not work
     - For jailbreaking support, see below
-- [Restoring the iPod touch 3rd gen and iPad 1 to iOS 6 untethered](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/touch3-ios6)
-- [Restoring the iPod touch 4th gen to iOS 7 tethered](https://github.com/LukeZGD/Legacy-iOS-Kit/wiki/touch4-ios7)
 - Jailbreaking for 32-bit devices and versions support:
     - iPhone 2G and touch 1 - 3.1.3 only
     - iPhone 3G and touch 2 - 4.2.1, 4.1, and 3.1.3
@@ -152,14 +169,9 @@
 - [libimobiledevice](https://github.com/LukeeGD/libimobiledevice) - libimobiledevice
 - [libirecovery](https://github.com/LukeeGD/libirecovery) - libimobiledevice
 - [libideviceactivation](https://github.com/LukeeGD/libideviceactivation) - libimobiledevice
-- [ideviceinstaller](https://github.com/LukeeGD/ideviceinstaller) - libimobiledevice
-- [ifuse](https://github.com/LukeeGD/ifuse) - libimobiledevice
 - [static-cross-openssh](https://github.com/binary-manu/static-cross-openssh) - scp and ssh binaries (used on Linux only)
 - [Motrix](https://github.com/agalwood/Motrix) - aria2c binaries
 - [usbmuxd2](https://github.com/LukeZGD/usbmuxd2) - tihmstar; LukeZGD fork (used on Linux only, optional)
-- [anisette-server](https://github.com/Dadoum/Provision) from Provision - Dadoum (used for sideloading on Linux)
-- [AltServer-Linux](https://github.com/NyaMisty/AltServer-Linux) - NyaMisty (used for sideloading on Linux)
-- [Sideloader](https://github.com/Dadoum/Sideloader) - Dadoum (used for sideloading on Linux and macOS)
 - [tsschecker](https://github.com/1Conan/tsschecker) - tihmstar; 1Conan fork (v413)
 - [darkhttpd](https://github.com/emikulic/darkhttpd)
 - [x8A4](https://github.com/Cryptiiiic/x8A4) - Cryptiiiic (for getting Cryptex seed)
@@ -198,9 +210,6 @@
 - 64-bit SSH Ramdisk stuff is based on Nathan's [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script) (iOS 12+), and exploit3dguy's iram tar from [iarchive.app](https://web.archive.org/web/20240324134204/https://ios7.iarchive.app/downgrade/making-ramdisk.html) (iOS 8)
     - [img4lib](https://github.com/xerub/img4lib) - xerub
     - [img4tool](https://github.com/tihmstar/img4tool) - tihmstar
-- Tools used for dumping IPA - forks by rcky844
-    - [ipainstaller](https://github.com/rcky844/ipainstaller)
-    - [Clutch](https://github.com/rcky844/Clutch)
 - For iPhone X restore patches:
     - Method by Mineek and Nathan
     - Mineek's [restored_external patcher](https://gist.github.com/mineek/16c2607c928477dcd273e680e40a1c90) for iPhone X downgrades to 14.3-15.x
