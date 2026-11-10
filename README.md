@@ -19,8 +19,8 @@
 - Restore supported devices to unsigned versions with SHSH blobs
 - Restore to unsigned iOS versions with iOS 7 blobs (powdersn0w)
 - Restore supported 32-bit devices to unsigned iOS versions "without" blobs
-    - Includes downgrading iPhone 2G, 3G, 3GS, iPhone 4 GSM and CDMA, iPod touch 1, 2, 3, iPad 1
-    - "without" is in quotes because powdersn0w uses iOS 5/7 blobs for touch 3 and A4 devices, but it is signed for everyone to use
+    - Includes downgrading iPhone 2G, 3G, 3GS, iPhone 4 GSM and CDMA, iPod touch 1, 2, 3, iPad 1, iPhone 4s
+    - "without" is in quotes because powdersn0w uses iOS 5/6/7 blobs for touch 3, A4 devices and iPhone 4s, but it is signed for everyone to use
     - Other devices however are true blobless
 - Tethered downgrades/restores to supported iOS versions for A5(X)/A6(X) and some other 32-bit devices
 - Jailbreak all 32-bit iOS devices on nearly any iOS version
@@ -120,8 +120,8 @@ Related notes:
     - iPad 1 - iOS 3.2 to 5.1
     - iPod touch 3 - iOS 3.1.1 to 5.1
     - Using powdersn0w requires iOS 7.x blobs for your device
-        - No blob requirement for iPhone 4, iPad 1, iPod touch 3 (7.1.2 and 5.1.1 are signed)
-        - For iPhone 4s and iPad 3, only 7.1.x blobs can be used.
+        - No blob requirement for iPhone 4, iPhone 4s, iPad 1, iPod touch 3 and iPod touch 4 (7.1.2, 6.1.3 for iPhone 4s, 6.1.6 for iPod touch 4 and 5.1.1 are signed)
+        - For iPad 3, only 7.1.x blobs can be used.
 - Restoring **tethered** to any version is supported on the following devices:
     - iPhone 4 (3,2 and 3,3), 4S, 5, 5C
     - iPad 2, 3, 4, mini 1
